@@ -1,0 +1,19 @@
+{
+  "type": "module",
+  "name": "zoho-backend-ticket",
+  "version": "1.0.0",
+  "description": "Playwright automation: Claude → TestRigor",
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:debug": "playwright test --debug"
+  },
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.15.0",
+    "dotenv": "^17.4.2"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.60.0"
+  }
+}

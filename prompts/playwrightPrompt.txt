@@ -1,0 +1,143 @@
+⚠️ PROCEED IMMEDIATELY — NO QUESTIONS ALLOWED.
+
+Generate ALL impacted TestRigor scripts and Excel scenarios NOW.
+
+IMPORTANT:
+
+* Save Excel file DIRECTLY to local path:
+  C:\Test Scenarios<BranchName>_TestScenarios.xlsx
+* DO NOT save anywhere else
+* Excel generation is MANDATORY
+* ALSO show ALL generated TestRigor scripts directly inside Claude chat output
+* ALSO show the final Excel rows inside Claude chat output
+* DO NOT skip script output after Excel generation
+* DO NOT summarize
+* DO NOT explain
+* ONLY generate final production-ready output
+
+REFERENCE SCRIPT 1 — exact syntax to follow:
+open url "https://integ.gallabox.in/"
+click "fake-website-warning-modal-close-button"
+leologin
+wait 3 sec
+Click "navigation-button-Conversations"
+Click on "Search"
+Enter "Elon Musk"
+Click on "Elon Musk" near "Unassigned"
+Click "Jayaroopini" left of "conversation-header-resolve-button"
+Click "Team RR" near "Team unassign"
+Wait 3 secs
+check that page contains "You have assigned the conversation to Team RR team"
+Click on "conversation-header-resolve-button"
+check that page contains "Conversation resolved"
+wait 10 secs
+refresh
+Click on "Filter conversation"
+Click on "Resolved chats"
+Click on "Apply" near "Cancel"
+check that page contains "Elon Musk"
+Click "Elon Musk" near "Resolved"
+check that page contains "Conversation resolved"
+check that page doesn't contain "Team assignment rule has assigned the conversation"
+
+REFERENCE SCRIPT 2 — exact syntax to follow:
+open url "https://integ.gallabox.in/"
+click "fake-website-warning-modal-close-button"
+leologin
+wait 3 sec
+Click on "navigation-button-Users, Teams & Roles"
+Wait 3 secs
+check that page contains "[automationtr@mailinator.com](mailto:automationtr@mailinator.com)"
+Click "user-list-menu-button" to the right of "[automationtr@mailinator.com](mailto:automationtr@mailinator.com)"
+Click "Delete user"
+Wait 2 secs
+Click "Confirm" near "Cancel"
+Wait for 5 secs upto 2 times until page contains "User deleted successfully"
+Click on "Settings" below "Analytics"
+Click on "navigation-button-Activity log"
+check that page contains "deleted" below "Today"
+check that page contains "Member" below "Today"
+
+Branch name for Excel: fix-bug-bash-day3
+
+MANDATORY SAVE PATH:
+C:\Test Scenarios\fix-bug-bash-day3_TestScenarios.xlsx
+
+Act as:
+
+* Senior QA Automation Engineer
+* TestRigor Expert
+* Excel Test Documentation Specialist
+* Regression Testing Specialist
+
+OBJECTIVE:
+
+1. Generate TestRigor automation scripts ONLY for impacted flows
+2. Generate complete Excel scenario sheet
+3. Save Excel file directly to:
+   C:\Test Scenarios\fix-bug-bash-day3_TestScenarios.xlsx
+4. Show all scripts directly in Claude response
+5. Show all Excel rows directly in Claude response
+
+STRICT RULES:
+
+* Follow exact TestRigor syntax from reference scripts
+* No invented syntax
+* No unnecessary checks
+* No unnecessary waits
+* No exploratory testing
+* Max 8–10 steps per script
+* Use exact clickable text
+* Use only deterministic validation
+* Avoid flaky validations
+* No generic UI checks
+* No extra explanations
+* No markdown tables
+* No summaries
+
+Branch comparison:
+
+1. dev
+2. fix/bug-bash-day3
+3. feat/testrigor-e2e-setup (REFERENCE ONLY)
+
+Environment:
+
+* App (dev): https://app.gallabox.dev
+* App (integ): https://integ.gallabox.in
+* Shared login step: leologin
+
+TASK:
+
+1. Compare dev vs fix/bug-bash-day3
+2. Identify ONLY impacted flows
+3. Generate TestRigor scripts
+4. Generate Excel scenario rows
+5. Generate Node.js ExcelJS script
+6. Save Excel directly to:
+   C:\Test Scenarios\fix-bug-bash-day3_TestScenarios.xlsx
+7. Print:
+   Done → C:\Test Scenarios\fix-bug-bash-day3_TestScenarios.xlsx
+
+OUTPUT FORMAT:
+
+1. Test Case Name
+2. Impact Area
+3. Suite
+4. Final TestRigor Script
+
+THEN:
+
+* Output ALL Excel rows
+
+
+
+FINAL REQUIREMENTS:
+
+* Script output must remain visible in Claude chat
+* Excel rows must remain visible in Claude chat
+* Excel file must save locally in C:\Test Scenarios
+* No questions
+* No placeholders
+* No skipped scenarios
+* Start immediately
