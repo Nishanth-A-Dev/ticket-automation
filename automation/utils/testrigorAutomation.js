@@ -53,6 +53,7 @@ async function getTestRigorPage() {
   _testrigorPage =
     await context.newPage();
 
+  await _testrigorPage.bringToFront();
   await _testrigorPage.goto(
     TESTRIGOR_URL,
     {

@@ -74,6 +74,7 @@ export async function openClaudeTab() {
 
   logger.info('Opening Claude Code…');
   await page.goto(CLAUDE_URL, { waitUntil: 'domcontentloaded', timeout: 60_000 });
+  await page.bringToFront();
   await page.waitForTimeout(3000);
 
   // ── Wait indefinitely for login if needed ────────────────────────────────────
