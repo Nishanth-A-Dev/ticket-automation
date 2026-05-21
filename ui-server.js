@@ -10,6 +10,12 @@ const PORT = 3000;
 
 app.use(express.json());
 
+// ── Serve React build if it exists ───────────────────────────────────────────
+const distPath = join(__dirname, 'ui', 'dist');
+if (existsSync(distPath)) {
+  app.use(express.static(distPath));
+}
+
 // ── Read/write .env helpers ──────────────────────────────────────────────────
 function readEnv() {
   const path = join(__dirname, '.env');
@@ -30,8 +36,11 @@ function writeEnv(updates) {
   writeFileSync(join(__dirname, '.env'), content);
 }
 
-// ── Main HTML page ───────────────────────────────────────────────────────────
+// ── Main HTML page (fallback when React dist not built) ──────────────────────
 app.get('/', (req, res) => {
+  if (existsSync(join(distPath, 'index.html'))) {
+    return res.sendFile(join(distPath, 'index.html'));
+  }
   const env = readEnv();
   res.send(`<!DOCTYPE html>
 <html lang="en">
@@ -80,6 +89,11 @@ app.get('/', (req, res) => {
     .status-done { background: #d4edda; color: #155724; }
     .status-failed { background: #f8d7da; color: #721c24; }
     .top-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .toggle-row { display: flex; gap: 10px; margin-bottom: 20px; }
+    .toggle-btn { flex: 1; padding: 12px; border: 2px solid #ddd; border-radius: 10px; background: white; font-size: 14px; font-weight: 600; cursor: pointer; color: #666; transition: all 0.2s; text-align: center; }
+    .toggle-btn.active { border-color: #6c63ff; background: #f0eeff; color: #6c63ff; }
+    .section { display: none; }
+    .section.visible { display: block; }
   </style>
 </head>
 <body>
@@ -92,12 +106,38 @@ app.get('/', (req, res) => {
     <!-- Settings -->
     <div class="card">
       <h2>⚙️ Settings</h2>
-      <div class="row">
-        <div class="field">
-          <label>Claude Session URL</label>
-          <input type="text" id="sessionUrl" placeholder="https://claude.ai/code/session_..." value="${env.SESSION_URL || ''}" />
+
+      <!-- Mode toggle -->
+      <div class="toggle-row">
+        <button class="toggle-btn ${env.OPEN_NEW_CLAUDE !== 'true' ? 'active' : ''}" id="btnFalse" onclick="setMode(false)">
+          📂 Use Existing Session<br><small style="font-weight:400;font-size:12px">Open old Claude tab and copy scripts</small>
+        </button>
+        <button class="toggle-btn ${env.OPEN_NEW_CLAUDE === 'true' ? 'active' : ''}" id="btnTrue" onclick="setMode(true)">
+          ✨ Open New Claude<br><small style="font-weight:400;font-size:12px">Send prompt, wait for response, copy scripts</small>
+        </button>
+      </div>
+
+      <!-- Existing session fields -->
+      <div class="section ${env.OPEN_NEW_CLAUDE !== 'true' ? 'visible' : ''}" id="sectionFalse">
+        <div class="row">
+          <div class="field">
+            <label>Claude Session URL</label>
+            <input type="text" id="sessionUrl" placeholder="https://claude.ai/code/session_..." value="${env.SESSION_URL || ''}" />
+          </div>
         </div>
       </div>
+
+      <!-- New session fields -->
+      <div class="section ${env.OPEN_NEW_CLAUDE === 'true' ? 'visible' : ''}" id="sectionTrue">
+        <div class="row">
+          <div class="field">
+            <label>Prompt File</label>
+            <input type="text" id="promptFile" placeholder="playwrightPrompt.txt" value="playwrightPrompt.txt" readonly style="background:#f7f7f7;color:#888" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Common -->
       <div class="row">
         <div class="field">
           <label>TestRigor URL</label>
@@ -137,6 +177,15 @@ app.get('/', (req, res) => {
   let evtSource = null;
   let totalScripts = 0;
   let currentScript = 0;
+  let openNew = ${env.OPEN_NEW_CLAUDE === 'true' ? 'true' : 'false'};
+
+  function setMode(isNew) {
+    openNew = isNew;
+    document.getElementById('btnFalse').className = 'toggle-btn' + (isNew ? '' : ' active');
+    document.getElementById('btnTrue').className  = 'toggle-btn' + (isNew ? ' active' : '');
+    document.getElementById('sectionFalse').className = 'section' + (isNew ? '' : ' visible');
+    document.getElementById('sectionTrue').className  = 'section' + (isNew ? ' visible' : '');
+  }
 
   function setStatus(type, text) {
     const badge = document.getElementById('statusBadge');
@@ -190,22 +239,29 @@ app.get('/', (req, res) => {
   }
 
   async function startRun() {
-    const sessionUrl = document.getElementById('sessionUrl').value.trim();
     const testrigorUrl = document.getElementById('testrigorUrl').value.trim();
-    if (!sessionUrl) { alert('Please enter Claude Session URL'); return; }
+    const sessionUrl = openNew ? '' : document.getElementById('sessionUrl').value.trim();
 
-    // Save settings
+    if (!openNew && !sessionUrl) { alert('Please enter Claude Session URL'); return; }
+
+    // Save settings — pass OPEN_NEW_CLAUDE as chosen by user
     await fetch('/save-env', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ SESSION_URL: sessionUrl, TESTRIGOR_URL: testrigorUrl, OPEN_NEW_CLAUDE: 'false' })
+      body: JSON.stringify({
+        SESSION_URL: sessionUrl,
+        TESTRIGOR_URL: testrigorUrl,
+        OPEN_NEW_CLAUDE: openNew ? 'true' : 'false'
+      })
     });
 
     document.getElementById('runBtn').disabled = true;
     document.getElementById('stopBtn').style.display = 'inline-flex';
     setStatus('running', 'Running...');
     clearLogs();
-    initGrid(16);
+    // Don't hardcode 16 — grid will build when TOTAL SCRIPTS appears in logs
+    document.getElementById('scriptsGrid').innerHTML = '';
+    document.getElementById('progressWrap').style.display = 'none';
 
     evtSource = new EventSource('/run-stream');
 
@@ -240,7 +296,8 @@ app.get('/', (req, res) => {
       }
 
       if (data.type === 'done') {
-        setDot(totalScripts, 'done');
+        // Mark all remaining dots as done
+        for (let i = 1; i <= totalScripts; i++) setDot(i, 'done');
         updateProgress(totalScripts);
         setStatus('done', 'All Done!');
         document.getElementById('runBtn').disabled = false;
@@ -275,9 +332,12 @@ app.get('/', (req, res) => {
 </html>`);
 });
 
+// ── Get .env ─────────────────────────────────────────────────────────────────
+app.get('/env', (req, res) => res.json(readEnv()));
+
 // ── Save .env ────────────────────────────────────────────────────────────────
 app.post('/save-env', (req, res) => {
-  writeEnv({ ...req.body, OPEN_NEW_CLAUDE: 'false' });
+  writeEnv(req.body);
   res.json({ ok: true });
 });
 
