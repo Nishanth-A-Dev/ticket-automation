@@ -65,6 +65,27 @@ app.get('/run-stream', (req, res) => {
 
   runningProcess = proc;
 
+  // After 4s, bring the automation Chrome window to front (Windows focus steal)
+  setTimeout(() => {
+    try {
+      execSync(`powershell -Command "
+        Add-Type @'
+using System;
+using System.Runtime.InteropServices;
+public class WinFocus {
+  [DllImport(\\"user32.dll\\")] public static extern bool SetForegroundWindow(IntPtr h);
+  [DllImport(\\"user32.dll\\")] public static extern bool ShowWindow(IntPtr h, int n);
+}
+'@
+$chrome = Get-Process chrome -ErrorAction SilentlyContinue | Where-Object { $_.MainWindowHandle -ne 0 } | Sort-Object StartTime -Descending | Select-Object -First 1
+if ($chrome) {
+  [WinFocus]::ShowWindow($chrome.MainWindowHandle, 9)
+  [WinFocus]::SetForegroundWindow($chrome.MainWindowHandle)
+}
+"`, { stdio: 'ignore' });
+    } catch {}
+  }, 4000);
+
   proc.stdout.on('data', (chunk) => {
     chunk.toString().split('\n').filter(Boolean).forEach(line => send({ type: 'log', line }));
   });
