@@ -57,7 +57,7 @@ app.get('/run-stream', (req, res) => {
 
   const send = (obj) => res.write(`data: ${JSON.stringify(obj)}\n\n`);
 
-  const proc = spawn('npx', ['playwright', 'test', 'tests/testrigor.spec.js', '--timeout=600000'], {
+  const proc = spawn('npx', ['playwright', 'test', '--config=automation/playwright.config.js', '--timeout=600000'], {
     cwd: __dirname,
     shell: true,
     env: { ...process.env }
