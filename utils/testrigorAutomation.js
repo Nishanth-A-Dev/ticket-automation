@@ -180,7 +180,13 @@ async function createAndRun(
 
   logger.success(`DONE: Script ${index + 1} submitted and running.`);
 
-  await trPage.waitForTimeout(4000);
+  // Wait for modal to close and page to fully settle before next script
+  await trPage.waitForTimeout(6000);
+
+  // Ensure the "Add Test Case" button is visible again (page settled)
+  try {
+    await trPage.locator(SEL.newTestCaseBtn).first().waitFor({ state: 'visible', timeout: 15000 });
+  } catch {}
 
   await takeScreenshot(
     trPage,

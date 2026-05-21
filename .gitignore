@@ -1,1 +1,7 @@
 .browser-profile/
+.env
+node_modules/
+logs/
+screenshots/
+test-results/
+playwright-report/
