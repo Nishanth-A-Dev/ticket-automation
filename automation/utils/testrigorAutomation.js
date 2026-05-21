@@ -61,25 +61,30 @@ async function getTestRigorPage() {
     }
   );
 
-  await _testrigorPage.waitForTimeout(
-    5000
-  );
+  await _testrigorPage.waitForTimeout(3000);
+
+  // ── Wait for login if needed (session saved to profile after first login) ──
+  const url = _testrigorPage.url();
+  if (url.includes('/login') || url.includes('/signin') || url.includes('auth')) {
+    logger.warn('═══════════════════════════════════════════════════');
+    logger.warn('  TESTRIGOR LOGIN REQUIRED — log in manually');
+    logger.warn('  Waiting forever — browser will NOT close');
+    logger.warn('═══════════════════════════════════════════════════');
+    await _testrigorPage.waitForFunction(
+      () => !location.href.includes('/login') && !location.href.includes('/signin') && !location.href.includes('auth'),
+      { timeout: 0 }
+    );
+    logger.success('TestRigor login detected — session saved to profile');
+    await _testrigorPage.waitForTimeout(3000);
+    await _testrigorPage.goto(TESTRIGOR_URL, { waitUntil: 'domcontentloaded', timeout: 60000 });
+    await _testrigorPage.waitForTimeout(3000);
+  }
 
   try {
-
-    await _testrigorPage
-      .locator(SEL.cookieAccept)
-      .first()
-      .click({
-        timeout: 4000
-      });
-
+    await _testrigorPage.locator(SEL.cookieAccept).first().click({ timeout: 4000 });
   } catch {}
 
-  logger.success(
-    'TestRigor opened'
-  );
-
+  logger.success('TestRigor opened');
   return _testrigorPage;
 }
 

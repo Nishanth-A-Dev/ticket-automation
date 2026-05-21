@@ -9,7 +9,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 // Use regular Claude chat — does NOT clone repo, does NOT use Claude Code quota
 const CLAUDE_URL  = process.env.CLAUDE_URL || 'https://claude.ai/new';
-const PROFILE_DIR = join(__dirname, '..', '.browser-profile', 'claude');
+const PROFILE_DIR = join(__dirname, '..', '..', '.browser-profile', 'claude');
 
 const SEL = {
   // Regular Claude chat uses a contenteditable div

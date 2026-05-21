@@ -4,7 +4,7 @@ import { fileURLToPath } from 'url';
 import { logger } from './logger.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const screenshotsDir = join(__dirname, '..', 'screenshots');
+const screenshotsDir = join(__dirname, '..', '..', 'screenshots');
 
 mkdirSync(screenshotsDir, { recursive: true });
 
